@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### HOST
-FICHIER_HOST=/home/cp219538/hosts
+FICHIER_HOST=/home/cp219538/Proxmox-Ansible-ClusterMysql/hosts
 TYPE_HOST=node0
 TYPE_SERVER=sql
 

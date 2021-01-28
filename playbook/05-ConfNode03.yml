@@ -13,7 +13,7 @@
     service: name=mariadb state=stopped 
 
   - name: Mysql - Transfert conf Node03
-    template: src=/home/cp219538/MysqlConf/mysql-node03-my.cnf dest=/etc/my.cnf owner=root mode=0644
+    template: src=/home/cp219538/Proxmox-Ansible-ClusterMysql/MysqlConf/mysql-node03-my.cnf dest=/etc/my.cnf owner=root mode=0644
 
   - name: Mysql - Supprime les fichiers
     raw: rm -rf /var/lib/mysql/*
@@ -29,7 +29,7 @@
     raw: rm -f /root/.my.cnf
 
   - name: Transfert Credentiels Mysql
-    template: src=/home/cp219538/MysqlConf/mysql_root.my.cnf dest=/root/.my.cnf owner=root mode=0600
+    template: src=/home/cp219538/Proxmox-Ansible-ClusterMysql/MysqlConf/mysql_root.my.cnf dest=/root/.my.cnf owner=root mode=0600
 
   - name: Suppression base TEST
     mysql_db: name=test state=absent
