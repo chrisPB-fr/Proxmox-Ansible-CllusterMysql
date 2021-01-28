@@ -1,0 +1,13 @@
+[ClusterSQL]
+node01-sql
+node02-sql
+node03-sql
+node04-sql
+[node01]
+node01-sql
+[node02]
+node02-sql
+[node03]
+node03-sql
+[node04]
+node04-sql

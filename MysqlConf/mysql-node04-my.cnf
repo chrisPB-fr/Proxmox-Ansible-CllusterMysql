@@ -1,0 +1,23 @@
+#
+# This group is read both both by the client and the server
+# use it for options that affect everything
+#
+[client-server]
+[mysqld]
+
+wsrep_cluster_address          = gcomm://node01-sql,node02-sql, node03-sql
+wsrep_provider                 = /usr/lib64/galera3/libgalera_smm.so
+
+wsrep_slave_threads            = 8
+wsrep_cluster_name             = SQL-Cluster
+wsrep_node_name                = node04-sql
+
+wsrep_node_address             = node04-sql
+wsrep_sst_method               = xtrabackup-v2
+wsrep_sst_auth                 = mysql-cluster:mysql@2020
+
+#
+# include all files from the config directory
+#
+!includedir /etc/my.cnf.d
+

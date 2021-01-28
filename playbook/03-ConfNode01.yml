@@ -1,0 +1,47 @@
+# ClusterSql.yml
+- hosts: node01
+  gather_facts: true
+  become: true
+
+  tasks:
+
+################################################
+# Configuration MariaDB Cluster 
+###############################################
+
+  - name: Stop Mariadb
+    service: name=mariadb state=stopped 
+
+  - name: Mysql - Transfert conf Node01
+    template: src=/home/cp219538/MysqlConf/mysql-node01-my.cnf dest=/etc/my.cnf owner=root mode=0644
+
+  - name: Mysql - Supprime les fichiers
+    raw: rm -rf /var/lib/mysql/*
+
+  - name: Mysql - Creation du Cluster 
+    raw: galera_new_cluster
+
+  - name: Relance Mariadb
+    service: name=mariadb state=started 
+
+########################################
+# Recreation du Root Password Mysql
+########################################
+
+  - name: SUppression fichier précedent
+    raw: rm -f /root/.my.cnf
+
+  - name: Set root password MariaDB
+    community.mysql.mysql_user:
+     name: root
+     password: Saet5470
+     priv: '*.*:ALL,GRANT'
+     state: present
+
+  - name: Transfert Credentiels Mysql
+    template: src=/home/cp219538/MysqlConf/mysql_root.my.cnf dest=/root/.my.cnf owner=root mode=0600
+
+  - name: Suppression base TEST
+    mysql_db: name=test state=absent
+
+

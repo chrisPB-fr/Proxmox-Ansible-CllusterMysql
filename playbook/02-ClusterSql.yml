@@ -1,0 +1,134 @@
+# ClusterSql.yml
+- hosts: ClusterSQL
+  gather_facts: true
+  become: true
+
+  tasks:
+
+#####################################
+# UPDATE & UPGRADE 
+#####################################
+
+#  - name: 1. Mise a jour du système Centos Cloud
+#    yum: name=* state=latest update_cache=true
+
+#######################################
+# Desactivation SELinux
+######################################
+
+  - name: 2. Suppression SELinux 
+    raw: sed s+SELINUX=enforcing+SELINUX=disabled+ /etc/selinux/config > /etc/selinux/config.bak && mv -f /etc/selinux/config.bak /etc/selinux/config
+
+################################################
+# Ajoute des IP Host dans le fichier /etc/hosts
+###############################################
+
+  - name: 3. Ajouts node01-sql dans hosts
+    lineinfile: dest=/etc/hosts backup=yes line="192.168.1.111   node01-sql node01-sql.house.cpb node01-sql.home"
+
+  - name: 3.1 Ajouts node02-sql dans hosts
+    lineinfile: dest=/etc/hosts backup=yes line="192.168.1.112   node02-sql node02-sql.house.cpb node02-sql.home"
+
+  - name: 3.2 Ajouts node03-sql dans hosts
+    lineinfile: dest=/etc/hosts backup=yes line="192.168.1.113   node03-sql node03-sql.house.cpb node03-sql.home"
+
+  - name: 3.3 Ajouts node04-sql dans hosts
+    lineinfile: dest=/etc/hosts backup=yes line="192.168.1.114   node04-sql node04-sql.house.cpb node04-sql.home"
+
+  - name: 3.4 chnge nom Host 
+    raw : echo "node01-sql" > /etc/hostname
+
+#########################################
+# Installation/Demarrage Firewall
+#########################################
+
+  - name: 4 Installation Firewall
+    raw:  yum install -y firewalld
+  - name: 4.1 Demarrage Firewalld
+    service: name=firewalld state=started enabled=true
+  - name: 4.2 Fixe les rules Firewall
+    raw:  /usr/bin/firewall-cmd --permanent --add-port={3306,4444,4567,4568}/tcp
+  - name: 4.3 Redemarrage du Firewall
+    service: name=firewalld state=restarted
+
+#########################################
+# Installation PERCONAT Mysql
+########################################
+
+  - name: 5 Telechargement du Repository PERCONA
+    raw: yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+  - name: 5.1 Update Centos avec Repository PERCONA
+    raw: yum makecache -y && yum update -y
+  - name: 5.2 Installatation des paquets PERCONA
+    yum:
+     name:
+     - Percona-XtraDB-Cluster-client-57*
+     - Percona-XtraDB-Cluster-server-57*
+     - Percona-XtraDB-Cluster-shared-57-debuginfo*
+     - Percona-XtraDB-Cluster-garbd-57-debuginfo*
+     - mariadb-server-galera.x86_64
+     - percona-toolkit
+     - percona-xtrabackup-24
+     - wget
+
+################################################
+# Demarrage Mariadb + Ajout Root + User Replicat
+###############################################
+
+  - name: 6 Demarrage Mariadb
+    service: name=mariadb state=started enabled=true
+
+  - name: 6.1 Adds Python MySQL pour RedHat/CentOS
+    yum: name=python3-PyMySQL state=present
+    when: ansible_os_family == 'RedHat'
+    tags: mysql
+
+  - name: 6.2 Set root password MariaDB
+    community.mysql.mysql_user:
+     name: root
+     password: Saet5470
+     priv: '*.*:ALL,GRANT'
+     state: present
+
+  - name: 6.3 Transfert Credentiels Mysql
+    template: src=/home/cp219538/MysqlConf/mysql_root.my.cnf dest=/root/.my.cnf owner=root mode=0600
+
+  - name: 6.4 Suppression base TEST 
+    mysql_db: name=test state=absent
+
+##############################################
+# CREATION USER pour les 4 Nodes  UNIQUEMENT
+##############################################
+
+  - name: 7 Creation User pour le Cluster MY-CLUSTER - Node01 
+    community.mysql.mysql_user:
+     name: mysql-cluster
+     password: mysql@2020
+     priv: '*.*:ALL,GRANT'
+     host: node01-sql
+     state: present
+
+  - name: 7.1 Creation User pour le Cluster MY-CLUSTER - Node02
+    community.mysql.mysql_user:
+     name: mysql-cluster
+     password: mysql@2020
+     priv: '*.*:ALL,GRANT'
+     host: node02-sql
+     state: present
+
+  - name: 7.2 Creation User pour le Cluster MY-CLUSTER - Node03
+    community.mysql.mysql_user:
+     name: mysql-cluster
+     password: mysql@2020
+     priv: '*.*:ALL,GRANT'
+     host: node03-sql
+     state: present
+
+  - name: 7.3 Creation User pour le Cluster MY-CLUSTER - Node04
+    community.mysql.mysql_user:
+     name: mysql-cluster
+     password: mysql@2020
+     priv: '*.*:ALL,GRANT'
+     host: node04-sql
+     state: present
+
