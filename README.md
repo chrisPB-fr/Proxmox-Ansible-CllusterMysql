@@ -1,4 +1,4 @@
-# Proxmox-Ansible-CllusterMysql
+# Proxmox-Ansible-ClusterMysql
 
 Mise en place d'un Cluster de 4 Machines Mysql PERCONA pour PROXMOX 
 
