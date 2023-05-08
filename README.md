@@ -8,3 +8,4 @@ Prérequis
   - puis lancer le script => Creation_ClusterSQL_4nodes.sh
   
  
+  - Test SSH Key Yubico
